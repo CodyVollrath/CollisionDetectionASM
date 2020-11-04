@@ -12,18 +12,48 @@ MUSHROOM_SPRITE_PIXELS=CAT_SPRITE_PIXELS+64
 ; address of the PRINTLINE routine in the kernel
 PRINTLINE=$AB1E
 PROGRAM_START
-
         ; clear the screen
         lda #<CLEAR_CHAR
         ldy #>CLEAR_CHAR
         jsr PRINTLINE
+
+;Display Cat
+        jsr DISPLAY_CAT_ROUTINE
+        jsr DRAW_FOUR_LINES_OF_TEXT
 ; start your code here
-        
+        ldx #63
+store_cat_loop
+        lda CAT_SPRITE_DATA,x
+        sta CAT_SPRITE_PIXELS,x
+        dex
+        bne store_cat_loop
+
 
 program_exit
         rts
 
+;Display cat routine
+DISPLAY_CAT_ROUTINE
+        lda #CAT_SPRITE_PIXELS / 64
+        sta $07F8
 
+        lda #60
+        sta $D000
+        lda #60
+        sta $D001
+
+        lda #1
+        sta $D015
+        rts
+;Draw four lines of text routine
+DRAW_FOUR_LINES_OF_TEXT
+        ldx #40
+draw_row4_loop
+        lda ROW4_DATA,X
+        sta $0428,X
+        dex
+        bne draw_row4_loop
+        rts
 ; please don't change anything after this line.
 ; bad stuff will happen
 CLEAR_CHAR
@@ -53,7 +83,6 @@ count_jiffies_loop
         lda $A2 ; changes every time!
         cmp JIFFY_COUNTER
         bne count_jiffies_loop
-
 
 ; repair register state
         pla ; pull y
